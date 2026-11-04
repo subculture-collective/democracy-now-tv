@@ -16,12 +16,13 @@ export function useViewerLinks(viewer: Viewer) {
   useEffect(() => {
     const controller = new AbortController();
     const open = async () => {
+      setError('');
       const link = new URL(location.href);
       if (link.searchParams.get('collection') && link.searchParams.get('collection') !== viewer.collection) { setError('This link belongs to a different archive.'); return; }
       if (link.searchParams.get('view') === 'channel') { await latest.current.tune(); return; }
       const item = link.searchParams.get('episode');
       if (!item) return;
-      try { const value = await request<{ episode: Episode }>(`/api/episodes/${encodeURIComponent(item)}?collection=${encodeURIComponent(viewer.collection)}`, controller.signal); if (!controller.signal.aborted && (!value.episode.collection_id || value.episode.collection_id === viewer.collection)) await latest.current.watch(value.episode); }
+      try { const value = await request<{ episode: Episode }>(`/api/episodes/${encodeURIComponent(item)}?collection=${encodeURIComponent(viewer.collection)}`, controller.signal); if (controller.signal.aborted) return; if (value.episode.collection_id && value.episode.collection_id !== viewer.collection) { setError('The shared episode belongs to a different archive.'); return; } await latest.current.watch(value.episode); }
       catch { if (!controller.signal.aborted) setError('The shared episode is unavailable in this archive.'); }
     };
     void open(); const changed = () => { void open(); }; window.addEventListener('popstate', changed);
@@ -46,7 +47,7 @@ export function VideoTools({ viewer, theater, onTheater }: { viewer: Viewer; the
     } catch (reason) { if (!(reason instanceof DOMException && reason.name === 'AbortError')) setMessage('Select and copy the link below.'); }
   };
   const link = viewer.session ? episodeLink(viewer.collection, viewer.session.episode.id, viewer.mode === 'channel') : '';
-  return <div className="viewer-tools" aria-label="Viewing and sharing controls">
+  return <div className="viewer-tools" role="group" aria-label="Viewing and sharing controls">
     <button aria-pressed={theater} onClick={() => onTheater(!theater)}>{theater ? 'Exit theater mode' : 'Theater mode'}</button>
     {viewer.session && <><button onClick={() => { void share(true); }}>Share {viewer.mode === 'channel' ? 'channel' : 'episode'}</button><button onClick={() => { void share(false); }}>Copy link</button><a href={`https://bsky.app/intent/compose?text=${encodeURIComponent(viewer.session.episode.title + ' ' + link)}`} target="_blank" rel="noreferrer">Share on Bluesky</a><a href={`mailto:?subject=${encodeURIComponent(viewer.session.episode.title)}&body=${encodeURIComponent(link)}`}>Share by email</a></>}
     {copyLink && <label>Share link<input readOnly value={copyLink} onFocus={event => event.target.select()} /></label>}
@@ -88,7 +89,7 @@ export function FavoriteShelf({ viewer, personal, layout }: { viewer: Viewer; pe
     return () => controller.abort();
   }, [key]);
   const episodes = result?.key === key ? result.episodes : null;
-  return <section className="favorite-shelf" aria-label="Saved favorites"><h2>Saved favorites</h2><p>{personal.favoriteIDs.length} saved references in {personal.user ? 'this product account' : 'this browser'}.</p>{!episodes && <p role="status">Checking current availability…</p>}
+  return <section className="favorite-shelf" id="library" aria-label="Saved favorites"><h2>Saved favorites</h2><p>{personal.favoriteIDs.length} saved {personal.favoriteIDs.length === 1 ? 'reference' : 'references'} in {personal.user ? 'this product account' : 'this browser'}.</p>{!episodes && <p role="status">Checking current availability…</p>}
     {layout === 'table' ? <div className="episode-table-wrap"><table className="episode-table"><caption>Saved favorite references</caption><thead><tr><th scope="col">Original date</th><th scope="col">Program</th><th scope="col">Available metadata</th><th scope="col">Actions</th></tr></thead><tbody>{ids.map(id => { const episode = episodes?.[id]; return <tr key={id}><td>{episode?.date || 'Date unknown'}</td><th scope="row">{episode?.title || id}</th><td>{episode ? <EpisodeMetadata episode={episode} /> : episodes ? 'Currently unavailable. Reference retained.' : 'Checking availability.'}</td><td>{episode && <button onClick={() => { void viewer.watch(episode); }}>Watch</button>}<button disabled={personal.busy} onClick={() => { void personal.toggle(id); }}>Remove favorite</button></td></tr>; })}</tbody></table></div> : <div className="episodes">{ids.map(id => { const episode = episodes?.[id]; return <article key={id}>{episode ? <><button className="episode-art" aria-label={`Watch ${episode.title}`} onClick={() => { void viewer.watch(episode); }}><EpisodeArtwork episode={episode} fallback="ARCHIVE" /></button><h3><button className="text-button" onClick={() => { void viewer.watch(episode); }}>{episode.title}</button></h3><time dateTime={episode.date}>{episode.date || 'Date unknown'}</time><EpisodeMetadata episode={episode} /><FavoriteAction episode={episode} personal={personal} /></> : <><h3>{id}</h3><p>{episodes ? 'Currently unavailable. The favorite reference is retained.' : 'Checking availability.'}</p><button disabled={personal.busy} onClick={() => { void personal.toggle(id); }}>Remove favorite reference</button></>}</article>; })}</div>}
     {!ids.length && <p>No saved favorites on this page.</p>}<nav aria-label="Favorite pages"><button disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Previous favorites</button><span>Page {currentPage}</span><button disabled={currentPage * 24 >= personal.favoriteIDs.length} onClick={() => setPage(currentPage + 1)}>Next favorites</button></nav>
   </section>;
