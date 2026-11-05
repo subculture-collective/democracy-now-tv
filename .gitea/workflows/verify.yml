@@ -45,8 +45,9 @@ jobs:
           trap 'rm -rf "$auth_dir"' EXIT
           export DOCKER_BUILDKIT=1
           printf '%s\n' '@subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/' > "$auth_dir/npmrc"
-          docker build -f deploy/frontend.Dockerfile --secret id=npmrc,src="$auth_dir/npmrc" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.source=https://git.subcult.tv/subculture-collective/democracy-now-tv" -t "$REGISTRY/democracy-now-tv-frontend:$GITHUB_SHA" .
+          docker build -f deploy/frontend.Dockerfile --build-arg CORE_UPSTREAM=democracy-core:8080 --secret id=npmrc,src="$auth_dir/npmrc" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.source=https://git.subcult.tv/subculture-collective/democracy-now-tv" -t "$REGISTRY/democracy-now-tv-frontend:$GITHUB_SHA" .
           docker tag "$REGISTRY/democracy-now-tv-frontend:$GITHUB_SHA" "fleet-deploy/democracy-now-tv/democracy-now-reference:$DEPLOY_REVISION"
+          docker run --rm --network none --entrypoint nginx "$REGISTRY/democracy-now-tv-frontend:$GITHUB_SHA" -t
       - name: Publish verified main images
         if: github.server_url == 'https://git.subcult.tv' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         shell: bash
@@ -85,7 +86,7 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > "$deploy_dir/key"
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$deploy_dir/known_hosts"
           unset DEPLOY_KEY DEPLOY_KNOWN_HOSTS
-          ssh_args=(-i "$deploy_dir/key" -o BatchMode=yes -o IdentitiesOnly=yes
+          ssh_args=(-F /dev/null -i "$deploy_dir/key" -o ControlPath=none -o ControlMaster=no -o BatchMode=yes -o IdentitiesOnly=yes
             -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$deploy_dir/known_hosts"
             -o ConnectTimeout=15 onnwee@10.0.0.200)
           ssh "${ssh_args[@]}" status
