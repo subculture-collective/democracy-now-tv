@@ -1,0 +1,79 @@
+{
+  "studio_repository": "subculture-collective/subcult-tv",
+  "studio_revision": "6907e56c181949c1d99064dbc38ae9fe660a66d0",
+  "brand": "democracy-now-tv",
+  "files": [
+    {
+      "source": "studio/brands/democracy-now-tv/GUIDE.md",
+      "target": "docs/brand/democracy-now-tv/GUIDE.md",
+      "sha256": "e9ee4706432049fe1d5b021348edee775e7d751d5f8ecd013dec762c0af8da42",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/readme-lockup.png",
+      "target": "docs/brand/democracy-now-tv/readme-lockup.png",
+      "sha256": "550740851b63e05979af6277e1994485005a1db53ce021650bcc6e55e23bbcec",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/social/avatar.png",
+      "target": "docs/brand/democracy-now-tv/avatar.png",
+      "sha256": "4de0087d702579690b1c2286030e70d7d870ac7a6dbb1049a70f84d265750c4c",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/favicon.svg",
+      "target": "web/public/brand/democracy-now-tv/favicon.svg",
+      "sha256": "f73292b5489e80b587363eb4d1297c4ef782d041bbda542dd993b928a9f49f53",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/favicon.ico",
+      "target": "web/public/brand/democracy-now-tv/favicon.ico",
+      "sha256": "ed19a8e11d215ae5aeaca01f63692ce2b96c8c70a03701960e325a5f78afb368",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/apple-touch-icon.png",
+      "target": "web/public/brand/democracy-now-tv/apple-touch-icon.png",
+      "sha256": "a2f4b210755392ef29d3f0efe7b5ce029fc0b34d302ce5148867384c74f00069",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/og.png",
+      "target": "web/public/brand/democracy-now-tv/og.png",
+      "sha256": "0be08ef9560f6016eb5f6e222bd0634c64135be7c7ca436f506be649bb5f348f",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/mark.svg",
+      "target": "web/public/brand/democracy-now-tv/mark.svg",
+      "sha256": "25a755b4d098e631ae448452b596a3d9bb3c08f6f48857f3b418feb9f95fc111",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/favicon.svg",
+      "target": "web/public/favicon.svg",
+      "sha256": "f73292b5489e80b587363eb4d1297c4ef782d041bbda542dd993b928a9f49f53",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/favicon.ico",
+      "target": "web/public/favicon.ico",
+      "sha256": "ed19a8e11d215ae5aeaca01f63692ce2b96c8c70a03701960e325a5f78afb368",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/apple-touch-icon.png",
+      "target": "web/public/apple-touch-icon.png",
+      "sha256": "a2f4b210755392ef29d3f0efe7b5ce029fc0b34d302ce5148867384c74f00069",
+      "transformation": "unchanged copy"
+    },
+    {
+      "source": "studio/brands/democracy-now-tv/product/og.png",
+      "target": "web/public/og.png",
+      "sha256": "0be08ef9560f6016eb5f6e222bd0634c64135be7c7ca436f506be649bb5f348f",
+      "transformation": "unchanged copy"
+    }
+  ]
+}
