@@ -56,3 +56,8 @@ The independent engine release and upgrade procedure is documented in
 ## Brand assets
 
 The product identity and selected public exports are recorded in [the brand handoff](docs/brand/democracy-now-tv/GUIDE.md) and [source hashes](docs/brand/democracy-now-tv/export.json). Regenerate from SUBCULT Studio with `python3 studio/scripts/export_remaining_brand.py democracy-now-tv /path/to/this/repository`; use `--check` to verify the export without writing.
+
+## Automatic public frontend deployment
+
+The existing verification gate now builds frontend images on PRs and deploys
+verified main builds to the live Almaz frontend. See the [CI deployment and rollback procedure](docs/automatic-frontend-deployment.md).
