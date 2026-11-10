@@ -2,62 +2,79 @@
 
 ![Democracy Now! archive identity](docs/brand/democracy-now-tv/readme-lockup.png)
 
-A standalone episode library and shared scheduled replay channel, built on the
-shared Arkhiv engine. This repository owns its frontend, design system, assets,
-and deployment configuration. The published viewer package and immutable engine digest are pinned together in
-`deploy/platform-release.json` and `deploy/archive-engine.env`. Historical
-deployment helpers retain their original hash-verified provenance.
+An independent viewer for Democracy Now! broadcasts held at Internet Archive. Watch a program from the beginning, or join the replay already playing on a shared scheduled channel. The original broadcast date stays with every program.
 
-Both on-demand playback and Tune in/Rejoin use the same reviewed content and
-source attribution. Viewer controls never change the shared schedule. Original
-dates remain visible and archived programming is labeled as replay.
+This repository holds the viewer's frontend, design and deployment configuration. The catalog and API come from SUBCULT's shared archive engine, which runs as a pinned container image. Video streams directly from Internet Archive: this app never downloads, proxies, caches or transcodes it.
 
-The design uses the supplied Democracy Now! vector logo and Amy Goodman photograph, with a dated news archive, readable reporting, and red/black/white styling. Video streams directly from Internet Archive. The app never acquires, proxies, persistently caches, or transcodes Democracy Now! video. Complete source metadata and history stay in its independent engine database.
+Public site: https://democracy-now.subcult.tv/
 
-## Verify and build
+## Features
 
-Run `make verify` for package/engine pins, tool/asset hashes, frozen dependencies,
-typecheck, lint, model tests, and production frontend build. Browser playback,
-audible fidelity, shared-channel drift, restore, and deployment remain distinct
-checks. Read `AGENTS.md` before changing generated code.
+- A broadcast library in grid or table view, with metadata filters and original dates.
+- On-demand playback from the start of any program.
+- A shared replay channel. **Tune in** joins the program at its current position; **Rejoin** returns to it after you pause. Your controls never change the channel's schedule.
+- Theater mode.
+- Share links by copying, by email or to Bluesky.
+- Favorites saved in your browser, with a separate favorites shelf.
+- Source attribution and a link to Democracy Now! on every page.
 
-Set `NPM_CONFIG_USERCONFIG` to a private npm configuration outside this checkout.
-It must select the Gitea registry for `@subcult` and supply a package-read token.
-CI uses the repository secret `ARCHIVE_PACKAGE_READ_TOKEN`. Build this frontend
-over the released engine, then prepare a separately reviewed deployment:
+Optional sign-in, saved preferences and a channel chat are built into the frontend but switched off in the standard deployment. Anonymous viewing does not need them.
+
+## Quick start
+
+Requirements: Node.js 24 and pnpm 10.33.0. The `@subcult` packages install from the registry set in [`web/.npmrc`](web/.npmrc).
 
 ```sh
-python3 scripts/build_image.py --npmrc /absolute/private/npmrc --tag democracy-now-tv:APP_SOURCE_SHA
-python3 scripts/deploy.py prepare \
-  --root ~/.local/state/video-archive/democracy-now-tv --project democracy-now-tv \
-  --image democracy-now-tv:APP_SOURCE_SHA --collection democracy_now_vid --port 48072
-python3 scripts/deploy.py start \
-  --root ~/.local/state/video-archive/democracy-now-tv --project democracy-now-tv \
-  --snapshot /absolute/reviewed/democracy-now-tv.dump
+pnpm --dir web install --frozen-lockfile
+pnpm --dir web dev
 ```
 
-The helper creates separate private credentials and database state, binds to loopback, and restores snapshots only into an empty owned database. Public ingress remains a separate owner decision. Never reuse another product's secrets or reset an existing database.
+Vite serves the app on port 5173 and proxies `/api` to `http://127.0.0.1:8080`. Set `VHNESS_API` to point it at another archive engine API.
 
-See [engine deployment operations](docs/engine-deployment.md) for source refresh, explicit private-library review, seven-day replay planning/renewal, preservation, and rollback. No host timers are installed automatically.
+Checks:
 
-## Assets and software license
+```sh
+make verify   # engine and viewer pins, tool hashes, frozen install, typecheck, lint, tests, production build
+```
 
-This is an independent archive viewer, not an assertion of official affiliation. [Asset provenance](docs/asset-provenance.json) records supplied filenames and hashes. Software follows the engine's GPL-3.0 license; third-party logos, photography, and inspiration retain their separate provenance and are not assigned that software license. Public-release clearance remains separate. Runtime media, metadata snapshots, secrets, and generated evidence stay outside Git.
+## Deploy
 
-## Public core deployment
+[`deploy/core-compose.yml`](deploy/core-compose.yml) runs PostgreSQL, the archive engine API, this frontend and an `operator` profile for migrations and catalog commands. The frontend image is built from [`deploy/frontend.Dockerfile`](deploy/frontend.Dockerfile): nginx serving the static app and proxying `/api` to the engine.
 
-The public site is live at https://democracy-now.subcult.tv/. The frontend remains
-owned here; the independently released headless core has its own reviewed update
-pin. See [public deployment and updates](docs/public-core-deployment.md).
+```sh
+docker compose --env-file deploy/archive-core.env -f deploy/core-compose.yml up -d
+```
 
-The independent engine release and upgrade procedure is documented in
-[Shared engine release](docs/shared-core-release.md).
+Set these before starting:
 
-## Brand assets
+| Variable | Purpose |
+| --- | --- |
+| `ARCHIVE_ENGINE_IMAGE` | Engine image, pinned by digest in [`deploy/archive-core.env`](deploy/archive-core.env) |
+| `FRONTEND_IMAGE` | Tag of the frontend image you built |
+| `COLLECTION` | Engine collection to serve (`democracy_now_vid`) |
+| `MEDIA_ROOT` | Media folder mounted read-only; empty for this collection, which streams from the source |
+| `SECRET_ROOT` | Folder holding the `database-password`, `database-url` and `operator-database-url` files |
+| `NPMRC_FILE` | npm configuration used while building the frontend image |
+| `WEB_PORT` | Loopback port for the frontend (default 8080) |
 
-The product identity and selected public exports are recorded in [the brand handoff](docs/brand/democracy-now-tv/GUIDE.md) and [source hashes](docs/brand/democracy-now-tv/export.json). Regenerate from SUBCULT Studio with `python3 studio/scripts/export_remaining_brand.py democracy-now-tv /path/to/this/repository`; use `--check` to verify the export without writing.
+Run the operator's `migrate` before the API, use a read-only database role for the public API, and put HTTPS in front of the frontend. [`deploy/community-compose.yml`](deploy/community-compose.yml) is an optional overlay that adds routing for accounts and chat; see [`docs/community.md`](docs/community.md).
 
-## Automatic public frontend deployment
+## Project layout
 
-The existing verification gate now builds frontend images on PRs and deploys
-verified main builds to the live Almaz frontend. See the [CI deployment and rollback procedure](docs/automatic-frontend-deployment.md).
+```text
+web/       React and Vite frontend (built on @subcult/archive-viewer)
+deploy/    Compose files, nginx configuration, engine and viewer pins
+scripts/   Pin and hash checks, image build and deployment helpers
+docs/      Brand assets, asset provenance and deployment notes
+```
+
+## Contributing
+
+- Bugs and feature requests: [GitHub issues](https://github.com/subculture-collective/democracy-now-tv/issues).
+- Code: pull requests on GitHub against `main`. CI runs `make verify` and builds the frontend image on every pull request. Both must pass.
+
+## License and rights
+
+The software is licensed under GPL-3.0. See [LICENSE](LICENSE).
+
+Broadcasts, the Democracy Now! logo and the photograph used in the header belong to their owners and are not covered by the software license. [Asset provenance](docs/asset-provenance.json) records where the shipped logo and photograph came from. This is an independent archive viewer. It is not made, run or endorsed by Democracy Now!.
