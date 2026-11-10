@@ -1,0 +1,84 @@
+name: Mirror CI
+run-name: Mirror CI ${{ github.sha }}
+'on':
+  push:
+    branches-ignore:
+    - main
+  workflow_dispatch: null
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      with:
+        node-version: '24'
+    - name: Install job-local pnpm
+      id: pnpm
+      shell: bash
+      run: |
+        set -euo pipefail
+        tool_dir="$RUNNER_TEMP/pnpm-tool"
+        npm install --prefix "$tool_dir" pnpm@10.33.0
+        echo "$tool_dir/node_modules/.bin" >> "$GITHUB_PATH"
+        echo "store=$("$tool_dir/node_modules/.bin/pnpm" store path --silent)" >> "$GITHUB_OUTPUT"
+    - name: Restore the pnpm store
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ${{ steps.pnpm.outputs.store }}
+        key: pnpm-store-v1-${{ runner.os }}-${{ hashFiles('web/pnpm-lock.yaml') }}
+    - name: Run canonical verification
+      run: make verify
+    if: github.repository == 'subculture-collective/democracy-now-tv'
+  image:
+    name: Frontend image build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        persist-credentials: false
+    - name: Build the deployable frontend image without publishing it
+      shell: bash
+      run: |
+        set -euo pipefail
+        umask 077
+        auth_dir=$(mktemp -d)
+        trap 'rm -rf "$auth_dir"' EXIT
+        export DOCKER_BUILDKIT=1
+        # Public package registry only; no credential is involved.
+        printf '%s\n' '@subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/' > "$auth_dir/npmrc"
+        image="democracy-now-tv-frontend:$GITHUB_SHA"
+        docker build -f deploy/frontend.Dockerfile --build-arg CORE_UPSTREAM=democracy-core:8080 --secret id=npmrc,src="$auth_dir/npmrc" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.source=https://git.subcult.tv/subculture-collective/democracy-now-tv" -t "$image" .
+        docker run --rm --network none --entrypoint nginx "$image" -t
+    if: github.repository == 'subculture-collective/democracy-now-tv'
+  mirror-gate:
+    name: Mirror CI gate
+    if: always() && github.repository == 'subculture-collective/democracy-now-tv'
+    needs:
+    - verify
+    - image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - name: Require every verification job
+      env:
+        RESULTS: ${{ toJSON(needs) }}
+      run: |
+        python3 - <<'PY'
+        import json, os
+        results = json.loads(os.environ["RESULTS"])
+        expected = {'verify', 'image'}
+        assert set(results) == expected, results
+        for name, result in results.items():
+            assert result["result"] == "success", name + " did not pass"
+        PY
