@@ -5,7 +5,7 @@ COPY web/package.json web/pnpm-lock.yaml ./
 RUN --mount=type=secret,id=npmrc,required=true NPM_CONFIG_USERCONFIG=/run/secrets/npmrc pnpm install --frozen-lockfile
 COPY web/ ./
 RUN pnpm build
-FROM nginx:1.30-alpine
+FROM nginx:1.31-alpine
 ARG CORE_UPSTREAM=api:8080
 COPY --from=frontend /src/web/dist /usr/share/nginx/html
 COPY deploy/frontend-nginx.conf /etc/nginx/nginx.conf
