@@ -1,10 +1,11 @@
 # Automatic public frontend deployment
 
-The native Gitea `verify` workflow runs the existing full repository verification,
-then builds deployable images on PRs and main. PR image builds receive no registry
-or deployment credentials. Main pushes and manual dispatches of main publish the
-verified images through the existing organization registry credential, then
-stream the same frontend image to the existing Almaz service.
+On GitHub, `Mirror CI` runs the full repository verification and builds the
+deployable frontend image on every pull request branch. Those builds receive no
+registry or deployment credentials. Pushes to main and manual dispatches of main
+run the `Deploy` workflow: it builds the image, publishes it to GitHub Packages,
+joins the tailnet and streams the same image to the existing Almaz service. The
+Gitea `verify` workflow only repeats the verification on main.
 
 This app uses Compose service `democracy-now-reference`, container `arkhiv-platform-public-20261004-democracy-now-reference-1`, at
 https://democracy-now.subcult.tv/. Deployment uses this repository's dedicated `HOMELAB_DEPLOY_KEY` and
