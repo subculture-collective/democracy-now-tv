@@ -4,6 +4,10 @@ main { max-width:1460px; padding:0 4.5vw; }
 .masthead { min-height:180px; gap:2.2rem; border-bottom:0; }
 .brand { flex-shrink:0; }
 .brand img { display:block; width:184px; height:auto; }
+.brand-own { display:flex; align-items:center; gap:1rem; text-decoration:none; flex-shrink:1; min-width:0; }
+.brand-own img { width:64px; height:64px; }
+.brand-own strong { display:block; font:700 1.75rem/1.1 Georgia,serif; letter-spacing:-.01em; }
+.brand-own small { display:block; margin-top:.45rem; color:var(--muted); font-size:.6rem; font-weight:700; letter-spacing:.12em; line-height:1.5; }
 .edition { flex:1; border-left:1px solid var(--border); padding-left:2rem; }
 .edition p { font-size:.62rem; font-weight:800; letter-spacing:.18em; margin:0 0 .7rem; }
 .edition span { font:2rem Georgia,serif; }
@@ -34,7 +38,7 @@ main { max-width:1460px; padding:0 4.5vw; }
 .caption-control select { background:#fff; color:var(--ink); }
 footer strong { color:var(--ink); font-family:Georgia,serif; font-size:1.1rem; }
 @media(max-width:1000px) { .edition { display:none; } .screen-layout { gap:1.5rem; grid-template-columns:minmax(0,1fr) 250px; } }
-@media(max-width:700px) { .masthead { min-height:135px; gap:1rem; } .brand img { width:140px; } .masthead nav { flex-direction:column; font-size:.75rem; gap:.6rem; } .archive-bar { font-size:.5rem; line-height:1.5; } .archive-bar span:last-child { text-align:right; } .screen-layout { grid-template-columns:1fr; } .photo img { aspect-ratio:16/9; } .news-intro h1 { font-size:2.8rem; } .shelf h2 { font-size:2rem; } }
+@media(max-width:700px) { .masthead { min-height:135px; gap:1rem; } .brand img { width:140px; } .brand-own { gap:.7rem; } .brand-own img { width:44px; height:44px; } .brand-own strong { font-size:1.25rem; } .brand-own small { font-size:.52rem; } .masthead nav { flex-direction:column; font-size:.75rem; gap:.6rem; } .archive-bar { font-size:.5rem; line-height:1.5; } .archive-bar span:last-child { text-align:right; } .screen-layout { grid-template-columns:1fr; } .photo img { aspect-ratio:16/9; } .news-intro h1 { font-size:2.8rem; } .shelf h2 { font-size:2rem; } }
 
 /* Consumer-owned viewing and personal controls use this product's palette. */
 .viewer-tools, .library-toolbar, .channel-controls, .message-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
