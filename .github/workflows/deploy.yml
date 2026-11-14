@@ -89,8 +89,9 @@ jobs:
         if: steps.artifact.outputs.available != 'true'
         run: |
           set -euo pipefail
-          # Runner DNS inside build containers fails now and then (EAI_AGAIN);
-          # retry the build twice before giving up.
+          # On some runners DNS inside build containers fails for the whole job
+          # (EAI_AGAIN), so RUN steps use the host network and its resolver; the
+          # retry covers one-off registry or network errors.
           retry() { for wait in 30 60 0; do "$@" && return 0; [ "$wait" = 0 ] && return 1; echo "Build failed; retrying in ${wait}s" >&2; sleep "$wait"; done; }
           test "$(git rev-parse HEAD)" = "$DEPLOY_REVISION"
           umask 077
@@ -98,7 +99,7 @@ jobs:
           trap 'rm -rf "$auth_dir"' EXIT
           export DOCKER_BUILDKIT=1
           printf '%s\n' '@subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/' > "$auth_dir/npmrc"
-          retry docker build -f deploy/frontend.Dockerfile --build-arg CORE_UPSTREAM=democracy-core:8080 --secret id=npmrc,src="$auth_dir/npmrc" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.source=https://git.subcult.tv/subculture-collective/democracy-now-tv" -t "$IMAGE:$GITHUB_SHA" .
+          retry docker build --network=host -f deploy/frontend.Dockerfile --build-arg CORE_UPSTREAM=democracy-core:8080 --secret id=npmrc,src="$auth_dir/npmrc" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.source=https://git.subcult.tv/subculture-collective/democracy-now-tv" -t "$IMAGE:$GITHUB_SHA" .
           # The fleet-deploy receiver identifies the application by this Gitea source label.
           docker tag "$IMAGE:$GITHUB_SHA" "fleet-deploy/democracy-now-tv/democracy-now-reference:$DEPLOY_REVISION"
           docker run --rm --network none --entrypoint nginx "$IMAGE:$GITHUB_SHA" -t
