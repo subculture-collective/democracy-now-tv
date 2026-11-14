@@ -67,9 +67,10 @@ database. This repository owns its pin. The `core` job in
 `.github/workflows/deploy.yml` runs before the web job when the version in
 `deploy/core-release.json` differs from the `core_version` that
 `https://democracy-now.subcult.tv/api/version` reports, when
-`deploy/core.Dockerfile` changed since the head of the last successful run of
-the workflow (a refused or cancelled run never counts, so its change carries
-forward), or when a manual run sets `deploy_core`. It stays off
+`deploy/core.Dockerfile` changed since the head of the last run whose core job
+succeeded (a core run that was refused, cancelled or skipped while
+`CORE_DEPLOY_ENABLED` was off never counts, so its change carries forward),
+or when a manual run sets `deploy_core`. It stays off
 until the repository variable `CORE_DEPLOY_ENABLED` is `true`. The job:
 
 1. pulls the pinned digest from `git.subcult.tv` (anonymous) and refuses an
