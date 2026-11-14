@@ -1,7 +1,7 @@
 # Public deployment and independent updates
 
 The public site at https://democracy-now.subcult.tv/ serves 6,582 reviewed programs
-through the independently published Arkhiv core 0.4.8. Its scope is
+through the independently published Arkhiv core 0.4.9. Its scope is
 `democracy_now_vid`. The existing distinct frontend belongs to this repository.
 
 `deploy/archive-core.env` and `deploy/core-release.json` record the immutable
@@ -53,3 +53,8 @@ migrations are additive and 0.1.1 ignores the new tables and artwork reviews.
 their Internet Archive item tile (`__ia_thumb.jpg`), a frame from the broadcast;
 the remaining program has no tile in its source inventory and keeps the text
 card. The library cards and player poster show these images.
+
+Core 0.4.9 (2026-11-14, same migrations as 0.4.8) adds `community` to
+`/api/version`; this instance reports accounts and chat off. Viewer 0.4.8 reads
+that and no longer requests the account session or polls the chat room, which
+had logged a 404 in the browser console on every page.
