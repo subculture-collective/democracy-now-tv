@@ -59,6 +59,8 @@ Set these before starting:
 
 Run the operator's `migrate` before the API, use a read-only database role for the public API, and put HTTPS in front of the frontend. [`deploy/community-compose.yml`](deploy/community-compose.yml) is an optional overlay that adds routing for accounts and chat; see [`docs/community.md`](docs/community.md).
 
+On the public site, merging a change to the core pin deploys the API automatically through [`deploy/core.Dockerfile`](deploy/core.Dockerfile), a labels-only wrapper of the pinned image; see [`docs/public-core-deployment.md`](docs/public-core-deployment.md#automatic-core-deploys).
+
 ## Project layout
 
 ```text
