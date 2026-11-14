@@ -14,7 +14,7 @@
   "dependencies": {
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "@subcult/archive-viewer": "0.4.10"
+    "@subcult/archive-viewer": "0.4.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
